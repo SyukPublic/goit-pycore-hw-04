@@ -30,10 +30,11 @@ def get_absolute_path(path: Union[Path, str], current_dir: Optional[Union[Path, 
     # Construct an absolute path and return
     return (current_dir if current_dir is not None else Path.cwd()) / path
 
-def load_text_file_data(file_path: Path) -> list[str]:
+def load_text_file_data(file_path: Path, remove_empty_lines: bool = False) -> list[str]:
     """Return the content of the given text file
 
     :param file_path: specified text file path (Path, mandatory)
+    :param remove_empty_lines: determines whether to remove empty lines (bool, optional)
     :return: file content (list of strings)
     """
 
@@ -46,6 +47,18 @@ def load_text_file_data(file_path: Path) -> list[str]:
         raise ValueError(f'The specified path "{file_path}" is not a file')
 
     # Open the specified file as a text file
-    with open(file_path, 'tr', encoding='utf-8') as fh:
-        # Return the file content
-        return fh.readlines()
+    try:
+        with open(file_path, 'tr', encoding='utf-8') as fh:
+            # Read the file data
+            file_content = [line for line in fh if not remove_empty_lines or line.strip()]
+            # Return the file data
+            return file_content
+    except UnicodeDecodeError as e:
+        # The file data is corrupted
+        # Raise exception to the upper level
+        raise ValueError(f'The file "{file_path}" data is corrupted')
+    except Exception as e:
+        # An unexpected error occurred
+        # Raise exception to the upper level
+        raise Exception('An unexpected error occurred: {error}.'.format(error=repr(e)))
+
