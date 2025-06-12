@@ -4,7 +4,7 @@
 Functions for works with files and directories
 """
 
-import time
+import json
 from typing import Optional, Any, Union
 from pathlib import Path
 
@@ -55,10 +55,68 @@ def load_text_file_data(file_path: Path, remove_empty_lines: bool = False) -> li
             file_content = [line for line in fh if not remove_empty_lines or line.strip()]
             # Return the file data
             return file_content
-    except UnicodeDecodeError as e:
+    except UnicodeDecodeError:
         # The file data is corrupted
         # Raise exception to the upper level
         raise ValueError(f'The file "{file_path}" data is corrupted')
+    except Exception as e:
+        # An unexpected error occurred
+        # Raise exception to the upper level
+        raise Exception('An unexpected error occurred: {error}.'.format(error=repr(e)))
+
+
+def load_json_file_data(
+        file_path: Path,
+        ignore_if_not_exist: bool = False,
+) -> Optional[Union[dict[str, Any], list[Any]]]:
+    """Deserialize and return the content of the given JSON file
+
+    :param file_path: specified text file path (Path, mandatory)
+    :param ignore_if_not_exist: return None if the file does not exist (bool, optional)
+    :return: deserialized JSON (dictionary, list, optional)
+    """
+
+    # Verify that the specified file exists
+    if not file_path.exists():
+        if ignore_if_not_exist:
+            return None
+        raise ValueError(f'The file "{file_path}" not found')
+
+    # Verify that the specified path is the file
+    if not file_path.is_file():
+        raise ValueError(f'The specified path "{file_path}" is not a file')
+
+    # Read the file data and deserialize
+    try:
+        return json.loads(file_path.read_text(encoding='utf-8'), strict=False)
+    except UnicodeDecodeError:
+        # The file data is corrupted
+        # Raise exception to the upper level
+        raise ValueError(f'The file "{file_path}" data is corrupted')
+    except Exception as e:
+        # An unexpected error occurred
+        # Raise exception to the upper level
+        raise Exception('An unexpected error occurred: {error}.'.format(error=repr(e)))
+
+
+def write_json_file_data(file_path: Path, data: Union[dict[str, Any], list[Any]]) -> None:
+    """Serialize and write the content to the given JSON file
+
+    :param file_path: specified text file path (Path, mandatory)
+    :param data: return None if the file does not exist (bool, mandatory)
+    """
+
+    # Verify that the specified path is the file if it already exists
+    if file_path.exists() and not file_path.is_file():
+        raise ValueError(f'The specified path "{file_path}" is not a file')
+
+    # Serialize data and write to the file
+    try:
+        file_path.write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
+    except UnicodeEncodeError:
+        # The file data is corrupted
+        # Raise exception to the upper level
+        raise ValueError(f'The data can not be encoded and written to a file')
     except Exception as e:
         # An unexpected error occurred
         # Raise exception to the upper level
