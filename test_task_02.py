@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-"
 
 """
-Tests for task 01
+Tests for task 02
 """
 
 from pathlib import Path

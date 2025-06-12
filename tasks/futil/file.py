@@ -4,7 +4,8 @@
 Functions for works with files and directories
 """
 
-from typing import Optional, Union
+import time
+from typing import Optional, Any, Union
 from pathlib import Path
 
 
@@ -42,7 +43,7 @@ def load_text_file_data(file_path: Path, remove_empty_lines: bool = False) -> li
     if not file_path.exists():
         raise ValueError(f'The file "{file_path}" not found')
 
-    # Verify that the specified file is the file
+    # Verify that the specified path is the file
     if not file_path.is_file():
         raise ValueError(f'The specified path "{file_path}" is not a file')
 
@@ -50,6 +51,7 @@ def load_text_file_data(file_path: Path, remove_empty_lines: bool = False) -> li
     try:
         with open(file_path, 'tr', encoding='utf-8') as fh:
             # Read the file data
+            # file_content = [line for line in fh.readlines() if not remove_empty_lines or line.strip()]
             file_content = [line for line in fh if not remove_empty_lines or line.strip()]
             # Return the file data
             return file_content
@@ -62,3 +64,40 @@ def load_text_file_data(file_path: Path, remove_empty_lines: bool = False) -> li
         # Raise exception to the upper level
         raise Exception('An unexpected error occurred: {error}.'.format(error=repr(e)))
 
+
+def build_directory_tree(directory_path: Path) -> dict[str, Any]:
+    """Return the given directory tree with metadata
+
+    :param directory_path: specified directory absolute path (Path, mandatory)
+    :return: directory tree (dictionary)
+    """
+
+    # Verify that the specified path exists
+    if not directory_path.exists():
+        raise ValueError(f'The path "{directory_path}" not found')
+
+    # Verify that the specified path is the file
+    if not directory_path.is_dir():
+        raise ValueError(f'The specified path "{directory_path}" is not a directory')
+
+    dir_tree: dict[str, Any] = dict(
+        name=directory_path.name,
+        type='directory',
+        stat=directory_path.stat(),
+        children=[],
+    )
+
+    # Iterate of the directory contents
+    for child in directory_path.iterdir():
+        if child.is_dir():
+            dir_tree['children'].append(build_directory_tree(child))
+        else:
+            dir_tree['children'].append(
+                dict(
+                    name=child.name,
+                    type='file',
+                    stat=child.stat(),
+                )
+            )
+
+    return dir_tree
