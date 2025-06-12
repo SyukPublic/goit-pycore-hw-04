@@ -6,8 +6,9 @@ Core functions for task 03
 
 from typing import Any, Union
 from pathlib import Path
-from colorama import Style, Fore
+from colorama import Fore
 
+from .cutil import print_colored
 from .futil import get_absolute_path, build_directory_tree
 
 
@@ -41,7 +42,7 @@ def print_directory_info(
     :return: None value
     """
 
-    print(Fore.BLUE + "{indent}{name}/".format(indent=indent * level, name=directory_info.get("name", "")))
+    print_colored(Fore.BLUE, "{indent}{name}/".format(indent=indent * level, name=directory_info.get("name", "")))
 
     # Get the children and sort them if specified
     directory_children: list[dict[str, Any]] = directory_info.get("children", [])
@@ -64,9 +65,10 @@ def print_directory_info(
             )
         else:
             # For the file type object, print name
-            print(Fore.GREEN + "{indent}{name}".format(indent=indent * (level + 1), name=child_info.get("name", "")))
-
-    print(Style.RESET_ALL)
+            print_colored(
+                Fore.GREEN,
+                "{indent}{name}".format(indent=indent * (level + 1), name=child_info.get("name", ""))
+            )
 
 
 def print_directory_tree(directory_path: Union[Path, str], sort: bool = False, directories_first: bool = False) -> None:

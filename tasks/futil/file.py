@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-"
 
 """
-Functions for works with files and directories
+Functions for works with the files and directories
 """
 
 import json
@@ -110,9 +110,12 @@ def write_json_file_data(file_path: Path, data: Union[dict[str, Any], list[Any]]
     if file_path.exists() and not file_path.is_file():
         raise ValueError(f'The specified path "{file_path}" is not a file')
 
+    # Make the data directory if it does not exist
+    file_path.parent.mkdir(exist_ok=True)
+
     # Serialize data and write to the file
     try:
-        file_path.write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
+        file_path.write_text(json.dumps(data, ensure_ascii=False, indent=4), encoding='utf-8')
     except UnicodeEncodeError:
         # The file data is corrupted
         # Raise exception to the upper level
