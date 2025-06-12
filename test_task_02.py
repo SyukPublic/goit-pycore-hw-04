@@ -12,13 +12,13 @@ from tasks.task_02 import get_cats_info
 def main() -> None:
     try:
         # Test the relative path to the file
-        print(get_cats_info("./data/cats_file.txt"))
+        print(get_cats_info("./tasks/data/cats_file.txt"))
     except Exception as e:
         print(e)
 
     try:
         # Test the absolute path to the file
-        print(get_cats_info(Path.cwd() / "./data/cats_file.txt"))
+        print(get_cats_info(Path.cwd() / "./tasks/data/cats_file.txt"))
     except Exception as e:
         print(e)
 
@@ -30,13 +30,13 @@ def main() -> None:
 
     try:
         # Test the path to the directory
-        print(get_cats_info("./data"))
+        print(get_cats_info("./tasks/data"))
     except Exception as e:
         print(e)
 
     try:
         # Test the binary data file
-        print(get_cats_info("./data/bindata.dat"))
+        print(get_cats_info("./tasks/data/bindata.dat"))
     except Exception as e:
         print(e)
 
