@@ -16,48 +16,56 @@ HELP: str = """
 1. Command "hello" – displays the phrase "How can I help you?"
 
 Example:
-Input: `"hello"`
-Output: `"How can I help you?"`
+Input: "hello"
+Output: "How can I help you?"
 
 ---
 
 2. Command "add [name] [phone number]" – adds a contact
 
 Example:
-Input: `"add John 1234567890"`
-Output: `"Contact added."`
+Input: "add John 1234567890"
+Output: "Contact added."
 
 ---
 
 3. Command "change [name] [new phone number]" – updates the contact's phone number
 
 Example:
-Input: `"change John 0987654321"`
-Output: `"Contact updated."` or an error message if the name is not found
+Input: "change John 0987654321"
+Output: "Contact updated." or an error message if the name is not found
 
 ---
 
 4. Command "phone [name]" – returns the phone number for the contact
 
 Example:
-Input: `"phone John"`
-Output: `[phone number]` or an error message if the name is not found
+Input: "phone John"
+Output: [phone number] or an error message if the name is not found
 
 ---
 
-5. Command "all" – returns the list of all contacts
+5. Command "delete [name]" – deletes the contact
 
 Example:
-Input: `"all"`
+Input: "delete John"
+Output: "Contact deleted." or an error message if the name is not found
+
+---
+
+6. Command "all" – returns the list of all contacts
+
+Example:
+Input: "all"
 Output: all saved contacts with their phone numbers
 
 ---
 
-6. Command "quit", "exit", or "close" – ends the bot session
+7. Command "quit", "exit", or "close" – ends the bot session
 
 Example:
 Input: any of these words
-Output: `"Good bye!"` and the bot stops running
+Output: "Good bye!" and the bot stops running
 """
 
 
@@ -194,6 +202,34 @@ def change_contact(args: list[str], contacts: dict[str, str]) -> str:
     return "Contact updated."
 
 
+def delete_contact(args: list[str], contacts: dict[str, str]) -> str:
+    """Delete the contact
+
+    :param args: arguments with contact name (list of string, mandatory)
+    :param contacts: contacts data (dictionary, mandatory)
+    :return Operation status string (string)
+    """
+
+    # Verify the number of arguments
+    if len(args) < 1:
+        raise ValueError("Invalid command arguments")
+
+    # Unpack the arguments to the name
+    name, *_ = args
+
+    # Verify if the contact exists
+    if name not in contacts:
+        raise ValueError("Contact does not exist")
+
+    # Delete contact
+    contacts.pop(name, None)
+
+    # Save contacts to the file
+    write_contacts_to_file(contacts)
+
+    return "Contact deleted."
+
+
 def main() -> None:
     # Interceptors for the SIGINT and SIGTERM signals (for example Ctrl + c exit)
     signal.signal(signal.SIGINT, exit_by_terminate_by_signals)
@@ -204,6 +240,7 @@ def main() -> None:
         contacts: dict[str, str] = read_contacts_from_file()
 
         print_welcome("Welcome to the assistant bot!")
+        print_help("Enter 'help' for a list of built-in commands.")
 
         while True:
             command, *args = parse_input(input("Enter a command: "))
@@ -226,6 +263,8 @@ def main() -> None:
                         print(add_contact(args, contacts))
                     case "change":
                         print(change_contact(args, contacts))
+                    case "delete":
+                        print(delete_contact(args, contacts))
                     case _:
                         print_error("Invalid command.")
             except ValueError as e:
